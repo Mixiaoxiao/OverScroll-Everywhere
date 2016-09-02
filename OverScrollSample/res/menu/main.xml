@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.mixiaoxiao.fastscroll.sample.MainActivity" >
+
+    <item
+        android:id="@+id/action_github"
+        android:orderInCategory="1"
+        android:icon="@drawable/github"
+        android:showAsAction="always"
+        android:title="github.com/Mixiaoxiao"/>
+
+</menu>

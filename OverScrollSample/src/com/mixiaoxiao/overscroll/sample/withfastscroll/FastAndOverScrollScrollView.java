@@ -1,4 +1,4 @@
-package com.mixiaoxiao.overscroll;
+package com.mixiaoxiao.overscroll.sample.withfastscroll;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -7,71 +7,86 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.GridView;
+import android.widget.ScrollView;
 
+import com.mixiaoxiao.fastscroll.FastScrollDelegate;
+import com.mixiaoxiao.fastscroll.FastScrollDelegate.FastScrollable;
+import com.mixiaoxiao.overscroll.OverScrollDelegate;
 import com.mixiaoxiao.overscroll.OverScrollDelegate.OverScrollable;
 
-/**
- * https://github.com/Mixiaoxiao/OverScroll-Everywhere
- * 
- * @author Mixiaoxiao 2016-08-31
- */
-public class OverScrollGridView extends GridView implements OverScrollable {
+public class FastAndOverScrollScrollView extends ScrollView implements FastScrollable, OverScrollable {
 
+	private FastScrollDelegate mFastScrollDelegate;
 	private OverScrollDelegate mOverScrollDelegate;
 
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-	
-	public OverScrollGridView(Context context) {
+	public FastAndOverScrollScrollView(Context context) {
 		super(context);
-		createOverScrollDelegate(context);
+		createDelegates(context);
 	}
 
-	public OverScrollGridView(Context context, AttributeSet attrs) {
+	public FastAndOverScrollScrollView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		createOverScrollDelegate(context);
+		createDelegates(context);
 	}
 
-	public OverScrollGridView(Context context, AttributeSet attrs, int defStyle) {
+	public FastAndOverScrollScrollView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		createOverScrollDelegate(context);
+		createDelegates(context);
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	public OverScrollGridView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+	public FastAndOverScrollScrollView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
-		createOverScrollDelegate(context);
+		createDelegates(context);
 	}
 
 	// ===========================================================
-	// createOverScrollDelegate
+	// createDelegates
 	// ===========================================================
-	
-	private void createOverScrollDelegate(Context context) {
+	private void createDelegates(Context context) {
+		mFastScrollDelegate = new FastScrollDelegate.Builder(this).build();
 		mOverScrollDelegate = new OverScrollDelegate(this);
 	}
 
 	// ===========================================================
-	// Delegate
+	// Modify these 3 methods, others are same as source code.
 	// ===========================================================
-	
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
+		if (mFastScrollDelegate.onInterceptTouchEvent(ev)) {
+			return true;
+		}
 		if (mOverScrollDelegate.onInterceptTouchEvent(ev)) {
 			return true;
 		}
+
 		return super.onInterceptTouchEvent(ev);
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
+		if (mFastScrollDelegate.onTouchEvent(event)) {
+			return true;
+		}
 		if (mOverScrollDelegate.onTouchEvent(event)) {
 			return true;
 		}
 		return super.onTouchEvent(event);
 	}
+
+	@Override
+	public boolean superAwakenScrollBars() {
+		// Just call mFastScrollDelegate.awakenScrollBars()
+		// Do not call super
+		return awakenScrollBars();
+	}
+
+	// ===========================================================
+	// OverScrollDelegate
+	// ===========================================================
 
 	@Override
 	public void draw(Canvas canvas) {
@@ -115,17 +130,12 @@ public class OverScrollGridView extends GridView implements OverScrollable {
 	}
 
 	@Override
-	public boolean superAwakenScrollBars() {
-		return super.awakenScrollBars();
-	}
-
-	@Override
 	public boolean superOverScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX,
 			int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
 		return super.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX,
 				maxOverScrollY, isTouchEvent);
 	}
-	
+
 	@Override
 	public View getOverScrollableView() {
 		return this;
@@ -134,6 +144,56 @@ public class OverScrollGridView extends GridView implements OverScrollable {
 	@Override
 	public OverScrollDelegate getOverScrollDelegate() {
 		return mOverScrollDelegate;
+	}
+
+	// ===========================================================
+	// FastScrollable
+	// ===========================================================
+
+	@Override
+	protected void onAttachedToWindow() {
+		super.onAttachedToWindow();
+		mFastScrollDelegate.onAttachedToWindow();
+	}
+
+	@Override
+	protected void onVisibilityChanged(View changedView, int visibility) {
+		super.onVisibilityChanged(changedView, visibility);
+		if (mFastScrollDelegate != null) {
+			mFastScrollDelegate.onVisibilityChanged(changedView, visibility);
+		}
+	}
+
+	@Override
+	protected void onWindowVisibilityChanged(int visibility) {
+		super.onWindowVisibilityChanged(visibility);
+		mFastScrollDelegate.onWindowVisibilityChanged(visibility);
+	}
+
+	@Override
+	protected boolean awakenScrollBars() {
+		return mFastScrollDelegate.awakenScrollBars();
+	}
+
+	@Override
+	protected void dispatchDraw(Canvas canvas) {
+		super.dispatchDraw(canvas);
+		mFastScrollDelegate.dispatchDrawOver(canvas);
+	}
+
+	@Override
+	public View getFastScrollableView() {
+		return this;
+	}
+
+	@Override
+	public FastScrollDelegate getFastScrollDelegate() {
+		return mFastScrollDelegate;
+	}
+
+	@Override
+	public void setNewFastScrollDelegate(FastScrollDelegate newDelegate) {
+		mFastScrollDelegate = newDelegate;
 	}
 
 }

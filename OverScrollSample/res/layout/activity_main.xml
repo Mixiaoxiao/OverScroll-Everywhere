@@ -1,0 +1,153 @@
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.mixiaoxiao.overscroll.sample.MainActivity" >
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="48dp" >
+
+        <RadioGroup
+            android:id="@+id/radiogroup"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal" >
+
+            <RadioButton
+                android:id="@+id/button_recyclerview"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:checked="true"
+                android:text="RecyclerView"
+                android:textSize="12dp" />
+
+            <RadioButton
+                android:id="@+id/button_scrollview"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="ScrollView"
+                android:textSize="12dp" />
+
+            <RadioButton
+                android:id="@+id/button_webview"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="WebView"
+                android:textSize="12dp" />
+
+            <RadioButton
+                android:id="@+id/button_listview"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="ListView"
+                android:textSize="12dp" />
+            <RadioButton
+                android:id="@+id/button_gridview"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="GridView"
+                android:textSize="12dp" />
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="48dp" >
+
+        <android.support.v7.widget.OverScrollRecyclerView
+            android:id="@+id/overScrollRecyclerView1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical" >
+        </android.support.v7.widget.OverScrollRecyclerView>
+
+        <com.mixiaoxiao.overscroll.sample.withfastscroll.FastAndOverScrollScrollView
+            android:id="@+id/overScrollScrollView1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@color/material_pink_500"
+                    android:gravity="center"
+                    android:text="OverScrollScrollView\nWith FastScroll"
+                    android:textColor="#ffff"
+                    android:textSize="28dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@color/material_teal_500"
+                    android:gravity="center"
+                    android:text="LogoOverScrollStyle"
+                    android:textColor="#ffff"
+                    android:textSize="28dp" />
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:gravity="center"
+                    android:text="Button"
+                    android:textSize="28dp" />
+                
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@color/material_pink_500"
+                    android:gravity="center"
+                    android:text="OverScrollScrollView"
+                    android:textColor="#ffff"
+                    android:textSize="28dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@color/material_teal_500"
+                    android:gravity="center"
+                    android:text="LogoOverScrollStyle"
+                    android:textColor="#ffff"
+                    android:textSize="28dp" />
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:gravity="center"
+                    android:text="Button"
+                    android:textSize="28dp" />
+
+               
+            </LinearLayout>
+        </com.mixiaoxiao.overscroll.sample.withfastscroll.FastAndOverScrollScrollView>
+
+        <com.mixiaoxiao.overscroll.OverScrollWebView
+            android:id="@+id/overScrollWebView1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <com.mixiaoxiao.overscroll.OverScrollListView
+            android:id="@+id/overScrollListView1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" >
+        </com.mixiaoxiao.overscroll.OverScrollListView>
+        
+        <com.mixiaoxiao.overscroll.OverScrollGridView 
+            android:id="@+id/overScrollGridView1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:numColumns="2"
+            android:visibility="gone">
+        </com.mixiaoxiao.overscroll.OverScrollGridView>
+    </FrameLayout>
+
+</merge>

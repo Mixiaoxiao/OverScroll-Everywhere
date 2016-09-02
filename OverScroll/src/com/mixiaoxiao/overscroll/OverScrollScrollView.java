@@ -1,6 +1,5 @@
 package com.mixiaoxiao.overscroll;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -15,19 +14,22 @@ import com.mixiaoxiao.overscroll.OverScrollDelegate.OverScrollable;
 /**
  * https://github.com/Mixiaoxiao/OverScroll-Everywhere
  * 
- * @author Mixiaoxiao 2016-08-31
+ * @author Mixiaoxiao 2016-08-31 
  */
 public class OverScrollScrollView extends ScrollView implements OverScrollable {
 
-	private OverScrollDelegate mDelegate;
+	private OverScrollDelegate mOverScrollDelegate;
 
+	// ===========================================================
+	// Constructors
+	// ===========================================================
 	public OverScrollScrollView(Context context) {
 		super(context);
 		createOverScrollDelegate(context);
 	}
 
 	public OverScrollScrollView(Context context, AttributeSet attrs) {
-		super(context, attrs); 
+		super(context, attrs);
 		createOverScrollDelegate(context);
 	}
 
@@ -42,36 +44,47 @@ public class OverScrollScrollView extends ScrollView implements OverScrollable {
 		createOverScrollDelegate(context);
 	}
 
+	// ===========================================================
+	// createOverScrollDelegate
+	// ===========================================================
 	private void createOverScrollDelegate(Context context) {
-		mDelegate = new OverScrollDelegate(this);
+		mOverScrollDelegate = new OverScrollDelegate(this);
 	}
 
-	// =====================
+	// ===========================================================
 	// Delegate
-	// =====================
+	// ===========================================================
+	@Override
+	public boolean onInterceptTouchEvent(MotionEvent ev) {
+		if (mOverScrollDelegate.onInterceptTouchEvent(ev)) {
+			return true;
+		}
+		return super.onInterceptTouchEvent(ev);
+	}
 
-	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		return mDelegate.onTouchEvent(event);
+		if (mOverScrollDelegate.onTouchEvent(event)) {
+			return true;
+		}
+		return super.onTouchEvent(event);
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
-		mDelegate.draw(canvas);
+		mOverScrollDelegate.draw(canvas);
 	}
 
 	@Override
 	protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX,
 			int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
-		// TODO Auto-generated method stub
-		return mDelegate.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX,
-				maxOverScrollY, isTouchEvent);
+		return mOverScrollDelegate.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY,
+				maxOverScrollX, maxOverScrollY, isTouchEvent);
 	}
 
-	// ================
-	// OverScrollable
-	// ================
+	// ===========================================================
+	// OverScrollable, aim to call view internal methods
+	// ===========================================================
 
 	@Override
 	public int superComputeVerticalScrollExtent() {
@@ -89,23 +102,13 @@ public class OverScrollScrollView extends ScrollView implements OverScrollable {
 	}
 
 	@Override
-	public boolean superOnTouchEventOfOverScrollable(MotionEvent event) {
-		return super.onTouchEvent(event);
+	public void superOnTouchEvent(MotionEvent event) {
+		super.onTouchEvent(event);
 	}
 
 	@Override
 	public void superDraw(Canvas canvas) {
 		super.draw(canvas);
-	}
-
-	@Override
-	public View getOverScrollableView() {
-		return this;
-	}
-
-	@Override
-	public OverScrollDelegate getOverScrollDelegate() {
-		return mDelegate;
 	}
 
 	@Override
@@ -118,6 +121,16 @@ public class OverScrollScrollView extends ScrollView implements OverScrollable {
 			int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
 		return super.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX,
 				maxOverScrollY, isTouchEvent);
+	}
+	
+	@Override
+	public View getOverScrollableView() {
+		return this;
+	}
+
+	@Override
+	public OverScrollDelegate getOverScrollDelegate() {
+		return mOverScrollDelegate;
 	}
 
 }
