@@ -3,7 +3,8 @@ OverScroll-Everywhere
 
 Add the over-scroll feature to any scrollable view: RecyclerView, ScrollView, WebView, ListView, GridView, etc. Support both fling and drag over-scroll，and easy to customize the over-scroll style.
 
-为任意可滑动的View定制越界效果(over-scroll)，同时支持滑动惯性越界与拖动越界，方便地定制与扩展不同的越界风格。注：安卓本身使用EdgeEffect实现越界效果(边缘发亮)，安卓4.x为固定的holo_blue色，5.0+为半透明colorPrimary色。
+为任意可滑动的View定制越界效果(over-scroll)，同时支持滑动惯性越界与拖动越界，方便地定制与扩展不同的越界风格。
+注：安卓本身使用EdgeEffect绘制越界效果(边缘发亮)，安卓4.x为固定的holo_blue色，5.0+为半透明colorPrimary色。
 
 ![OverScroll-Everywhere](https://raw.github.com/Mixiaoxiao/OverScroll-Everywhere/master/Screenshots/OverScroll-Everywhere.png) 
 
