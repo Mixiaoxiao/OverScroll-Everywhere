@@ -3,7 +3,6 @@ package com.mixiaoxiao.overscroll;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Path;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
@@ -12,10 +11,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewParent;
+import android.view.animation.Interpolator;
 
-import com.mixiaoxiao.overscroll.PathScroller.PathPointsHolder;
-
-public class OverScrollDelegate {
+public class OverScrollDelegateBakV2 {
 
 	public static interface OverScrollable {
 		public int superComputeVerticalScrollExtent();
@@ -35,12 +33,12 @@ public class OverScrollDelegate {
 
 		public View getOverScrollableView();
 
-		public OverScrollDelegate getOverScrollDelegate();
+		public OverScrollDelegateBakV2 getOverScrollDelegate();
 	}
 
 	public static abstract class OverScrollStyle {
 
-		public static final float DEFAULT_DRAW_TRANSLATE_RATE = 0.36f;
+		public static final float DEFAULT_DRAW_TRANSLATE_RATE = 0.33f;
 		public static final float SYSTEM_DENSITY = Resources.getSystem().getDisplayMetrics().density;
 
 		/**
@@ -82,29 +80,12 @@ public class OverScrollDelegate {
 	private static final OverScrollStyle sDefaultStyle = new OverScrollStyle() {
 	};
 
-	private static final PathPointsHolder sDragBackPathPointsHolder = buildDragBackPathPointsHolder();
-	private static final PathPointsHolder sFlingBackPathPointsHolder = buildFlingBackPathPointsHolder();
-
-	private static PathPointsHolder buildDragBackPathPointsHolder() {
-		final float startY = 1f;
-		Path path = new Path();
-//		path.moveTo(0, startY);
-//		path.cubicTo(0.15f, 0.11f, 0.56f, 0.10f, 1f, 0f);
-		path.moveTo(0, startY);
-		path.cubicTo(0.11f, 0.11f, 0.36f, 0.05f, 1f, 0f);
-		return new PathPointsHolder(path);
-	}
-
-	private static PathPointsHolder buildFlingBackPathPointsHolder() {
-		final float baseOverY = 1f; 
-		Path path = new Path();
-		path.moveTo(0f, 0f);
-//		path.cubicTo(0.1f, overY * 0.6f, 0.15f, overY * 1.0f, 0.30f, overY);
-//		path.cubicTo(0.44f, overY * 1.00f, 0.58f, overY * 0.02f, 1f, 0f);
-		path.cubicTo(0.05f, baseOverY * 0.8f, 0.09f, baseOverY * 1.20f, 0.21f, baseOverY * 0.88f);
-		path.cubicTo(0.48f, baseOverY * 0.10f, 0.72f, baseOverY * 0.02f, 1f, 0f);
-		return new PathPointsHolder(path);
-	}
+	private static final Interpolator sInterpolator = new Interpolator() {
+		public float getInterpolation(float t) {
+			t -= 1.0f;
+			return t * t * t * t * t + 1.0f;
+		}
+	};
 
 	static final String LOG_TAG = "OverScrollDelegate";
 
@@ -114,8 +95,7 @@ public class OverScrollDelegate {
 	public static final int OS_SPRING_BACK = 3;
 	public static final int OS_FLING = 4;
 
-	private static final int DRAG_BACK_DURATION = 420;
-	private static final int FLING_BACK_DURATION = 550;
+	private static final int SPRING_BACK_DURATION = 500;
 
 	private static final int INVALID_POINTER = -1;
 
@@ -127,17 +107,17 @@ public class OverScrollDelegate {
 	private float mOffsetY;
 	private int mActivePointerId = INVALID_POINTER;
 
-	private final PathScroller mScroller;
+	private final OverScroller mScroller;
 
 	private final View mView;
 	private OverScrollable mOverScrollable;
+	private final int mMaximumFlingVelocity;
 	private boolean mEnableDragOverScroll = true;
 	private boolean mEnableFlingOverScroll = true;
+
 	private OverScrollStyle mStyle;
 
-	// private final Path mPath = new Path();
-
-	public OverScrollDelegate(OverScrollable overScrollable) {
+	public OverScrollDelegateBakV2(OverScrollable overScrollable) {
 		this.mView = overScrollable.getOverScrollableView();
 		if (mView instanceof RecyclerView) {
 			// In RecyclerView, we need to override the method absorbGlows
@@ -148,10 +128,12 @@ public class OverScrollDelegate {
 		} else {
 			mView.setOverScrollMode(View.OVER_SCROLL_NEVER);
 		}
+
 		this.mOverScrollable = overScrollable;
 		Context context = mView.getContext();
-		mScroller = new PathScroller();
+		mScroller = new OverScroller(context, sInterpolator);
 		ViewConfiguration configuration = ViewConfiguration.get(context);
+		mMaximumFlingVelocity = configuration.getScaledMaximumFlingVelocity();// 8000dp
 		// TouchSlop() / 2 to make TouchSlop "more sensible"
 		mTouchSlop = configuration.getScaledTouchSlop() / 2;// 8dp/2
 		mStyle = sDefaultStyle;
@@ -237,22 +219,21 @@ public class OverScrollDelegate {
 			// The direction mOffsetY is same as TouchEvent,
 			// and the direction of "velocityY" is same as scroll,
 			// so we need to reverse it.
-			if (velocityY != 0) {
-				onAbsorb(-velocityY);
-			}
-
+			onAbsorb(-velocityY);
 		}
 	}
 
-	private void onAbsorb(final int velocityY) {
+	private void onAbsorb(int velocityY) {
 		// offset the start of fling 1px
 		mOffsetY = velocityY > 0 ? -1 : 1;
-		final float overY = velocityY * 0.07f;
+		int minY = 0;
+		int maxY = 0;
+		final int overY = Math.round(mView.getHeight() * (Math.abs(velocityY) / (float) mMaximumFlingVelocity));
 		log("velocityY->" + velocityY + " overY->" + overY);
-		mScroller.start(overY, FLING_BACK_DURATION, sFlingBackPathPointsHolder);
+		mScroller.fling(0, (int) mOffsetY, 0, velocityY, 0, 0, minY, maxY, 0, overY);
 		setState(OS_FLING);
 		mView.invalidate();
-	} 
+	}
 
 	public void draw(Canvas canvas) {
 		if (mState == OS_NONE) {
@@ -527,13 +508,7 @@ public class OverScrollDelegate {
 			if (mOffsetY != 0f) {
 				// Sping back to 0
 				final int startScrollY = Math.round(mOffsetY);
-				// mScroller.startScroll(0, startScrollY, 0, -startScrollY,
-				// SPRING_BACK_DURATION);
-				// mPath.reset();
-				// mPath.moveTo(0f, startScrollY);
-				// mPath.lineTo(1f, 0);
-				// mScroller.start(1f, SPRING_BACK_DURATION, mPath);
-				mScroller.start(startScrollY, DRAG_BACK_DURATION, sDragBackPathPointsHolder);
+				mScroller.startScroll(0, startScrollY, 0, -startScrollY, SPRING_BACK_DURATION);
 				setState(OS_SPRING_BACK);
 				mView.invalidate();
 			}
